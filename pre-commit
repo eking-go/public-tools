@@ -1,0 +1,61 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+'''
+pre-commit git hook for check __version__ in python scripts.
+The version format: __version__ = 'major.minor.datetime'
+datetime format (only digits, without ay non-digit characters) defined by
+global variables of this script - VERSION_FMT
+'''
+
+__author__ = 'Nikolay Gatilov'
+__copyright__ = 'Nikolay Gatilov'
+__license__ = 'GPL'
+__version__ = '1.0.2015052917'
+__maintainer__ = 'Nikolay Gatilov'
+__email__ = 'eking.work@gmail.com'
+
+import subprocess
+from datetime import datetime
+import re
+
+VERSION_FMT = '%Y%m%d%H'
+REG = re.compile('\s*(__version__)\s*=\s*([\'"]{1})(.*)([\'"]{1}).*')
+REGV = re.compile('.*[.]{1}(\d+).*')
+
+
+def check_py_vers(filename):
+    '''
+    check __version__ in file 'filename'
+    '''
+    fdesc = open(filename)
+    flag = 0
+    for istr in fdesc:
+        p_reg = REG.match(istr)
+        if p_reg:
+            prg = p_reg.group(3)
+            prgv = REGV.match(prg)
+            if prgv:
+                prgvs = prgv.group(1)
+                tnow = datetime.now()
+                tnows = tnow.strftime(VERSION_FMT)
+                if prgvs != tnows:
+                    flag = 1
+                    print 'Version error: %s - %s but now is %s' % (filename,
+                                                                    prgvs,
+                                                                    tnows)
+            break
+    return flag
+
+
+#===================================== MAIN ==================================
+if __name__ == "__main__":  # main
+    psub = subprocess.Popen(['git', 'log', '-1',
+                          '--name-only', '--pretty=format:'],
+                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    psub.wait()
+    exit_state = 0
+    for file_iter in psub.stdout.read().split():
+        if file_iter[-3:] == '.py':
+            exit_state = exit_state + check_py_vers(file_iter)
+    exit(exit_state)
