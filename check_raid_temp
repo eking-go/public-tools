@@ -1,0 +1,68 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+'''
+nagios check Adaptec raid temperature plugin
+'''
+
+__author__ = 'Nikolay Gatilov'
+__copyright__ = 'Nikolay Gatilov'
+__license__ = 'GPL'
+__version__ = '0.1.20150623'
+__maintainer__ = 'Nikolay Gatilov'
+__email__ = 'eking.work@gmail.com'
+
+import sys
+import subprocess
+import re
+import string
+import argparse
+
+
+def get_temp_status():
+    ''' return (temp_celsius, temp_F, status)'''
+    #   Temperature                              : 40 C/ 104 F (Normal)
+    t_re = re.compile('^\s*Temperature\s*:\s*(\d*).*C/\s(\d*).*\((.*)\).*$')
+    p = subprocess.Popen("/usr/bin/sudo /usr/StorMan/arcconf GETCONFIG 1 AL",
+                         shell=True,
+                         stdin=subprocess.PIPE,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.STDOUT,
+                         close_fds=True)
+    (s_out, s_err) = (p.stdout, p.stderr)
+    for line in s_out:
+        status = t_re.match(line)
+        if status:
+            return (int(status.group(1)),
+                    int(status.group(2)),
+                    status.group(3))
+    return (0, 0, 'FAIL CHECK ARCCONF')
+
+
+if __name__ == "__main__":  # main
+    check_status = 0
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--wc', help=('Warning Celsius'), type=int)
+    parser.add_argument('--cc', help=('Critical Celsius'), type=int)
+    parser.add_argument('--wf', help=('Warning Celsius'), type=int)
+    parser.add_argument('--cf', help=('Critical Celsius'), type=int)
+    args = parser.parse_args()
+    stat = get_temp_status()
+
+    if stat[2] != 'Normal':
+        check_status = 2
+
+    if args.wc and args.wc < stat[0]:
+        check_status = 1
+    elif args.cc and args.cc < stat[0]:
+        check_status = 2
+
+    if args.wf and args.wf < stat[0]:
+        check_status = 1
+    elif args.cf and args.cf < stat[0]:
+        check_status = 2
+
+    print 'Adaptec Raid Temperature %d C / %d F / status: %s' % (stat[0],
+                                                                 stat[1],
+                                                                 stat[2])
+    sys.exit(check_status)
