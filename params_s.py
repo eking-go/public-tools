@@ -8,7 +8,7 @@ for use in shell scripts - get/set params from file
 __author__ = 'Nikolay Gatilov'
 __copyright__ = 'Nikolay Gatilov'
 __license__ = 'GPL'
-__version__ = '1.0.2015062317'
+__version__ = '1.0.2015062318'
 __maintainer__ = 'Nikolay Gatilov'
 __email__ = 'eking.work@gmail.com'
 

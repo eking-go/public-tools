@@ -8,7 +8,7 @@ nagios check Adaptec raid temperature plugin
 __author__ = 'Nikolay Gatilov'
 __copyright__ = 'Nikolay Gatilov'
 __license__ = 'GPL'
-__version__ = '0.1.20150623'
+__version__ = '0.1.2015062318'
 __maintainer__ = 'Nikolay Gatilov'
 __email__ = 'eking.work@gmail.com'
 
@@ -44,8 +44,8 @@ if __name__ == "__main__":  # main
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--wc', help=('Warning Celsius'), type=int)
     parser.add_argument('--cc', help=('Critical Celsius'), type=int)
-    parser.add_argument('--wf', help=('Warning Celsius'), type=int)
-    parser.add_argument('--cf', help=('Critical Celsius'), type=int)
+    parser.add_argument('--wf', help=('Warning Fahrenheit'), type=int)
+    parser.add_argument('--cf', help=('Critical Fahrenheit'), type=int)
     args = parser.parse_args()
     stat = get_temp_status()
 
@@ -57,9 +57,9 @@ if __name__ == "__main__":  # main
     elif args.cc and args.cc < stat[0]:
         check_status = 2
 
-    if args.wf and args.wf < stat[0]:
+    if args.wf and args.wf < stat[1]:
         check_status = 1
-    elif args.cf and args.cf < stat[0]:
+    elif args.cf and args.cf < stat[1]:
         check_status = 2
 
     print 'Adaptec Raid Temperature %d C / %d F / status: %s' % (stat[0],
