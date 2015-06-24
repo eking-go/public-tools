@@ -3,14 +3,14 @@
 
 '''
 for use in shell scripts - get/set params from file
+Last version: https://github.com/eking-go/public-tools
 '''
 
 __author__ = 'Nikolay Gatilov'
 __copyright__ = 'Nikolay Gatilov'
 __license__ = 'GPL'
-__version__ = '1.0.2015062318'
+__version__ = '1.0.2015062417'
 __maintainer__ = 'Nikolay Gatilov'
-__email__ = 'eking.work@gmail.com'
 
 import sys
 import argparse
@@ -56,7 +56,7 @@ def join_conf(conf1, conf2):
                 conf2.set(i, j)
     return conf2
 
-#===================================== MAIN ==================================
+# ===================================== MAIN =================================
 if __name__ == '__main__':  # main
     version_now = datetime.now().strftime(version_fmt)
 
@@ -84,11 +84,11 @@ if __name__ == '__main__':  # main
     parser.add_argument('--file', help='local file name')
     parser.add_argument('--node', help='IP/fqdn of node to connect')
     parser.add_argument('--key', help='key file',
-                                 default='~/.ssh/id_rsa')
+                        default='~/.ssh/id_rsa')
     parser.add_argument('--port', help='ssh port', type=int, default=22)
     parser.add_argument('--usr', help='user for connect', default='user')
     parser.add_argument('--pwd', help='password for user or key',
-                                 default='password')
+                        default='password')
     parser.add_argument('--nf', help='file name of config on node')
     parser.add_argument('--section', help='section name', default='main')
     parser.add_argument('--option', help='variable name')

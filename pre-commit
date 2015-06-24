@@ -6,14 +6,14 @@ pre-commit git hook for check __version__ in python scripts.
 The version format: __version__ = 'major.minor.datetime'
 datetime format (only digits, without ay non-digit characters) defined by
 global variables of this script - VERSION_FMT
+Last version: https://github.com/eking-go/public-tools
 '''
 
 __author__ = 'Nikolay Gatilov'
 __copyright__ = 'Nikolay Gatilov'
 __license__ = 'GPL'
-__version__ = '1.0.2015052917'
+__version__ = '1.1.2015062417'
 __maintainer__ = 'Nikolay Gatilov'
-__email__ = 'eking.work@gmail.com'
 
 import subprocess
 from datetime import datetime
@@ -48,14 +48,26 @@ def check_py_vers(filename):
     return flag
 
 
-#===================================== MAIN ==================================
-if __name__ == "__main__":  # main
-    psub = subprocess.Popen(['git', 'log', '-1',
-                          '--name-only', '--pretty=format:'],
-                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+# ===================================== MAIN =================================
+if __name__ == "__main__":
+    psub = subprocess.Popen(['git', 'status', '-s', '-uno'],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE)
     psub.wait()
+    file_list = []
+    re_stat1 = re.compile('\s*[MARDCU]+\s+(.*)\s*$')
+    re_stat2 = re.compile('.*->\s+(.*)\s*$')
+    for i in psub.stdout.readlines():
+        stat = re_stat2.match(i)
+        if stat:
+            file_list.append(stat.group(1))
+            continue
+        stat = re_stat1.match(i)
+        if stat:
+            file_list.append(stat.group(1))
+
     exit_state = 0
-    for file_iter in psub.stdout.read().split():
+    for file_iter in file_list:
         if file_iter[-3:] == '.py':
             exit_state = exit_state + check_py_vers(file_iter)
     exit(exit_state)

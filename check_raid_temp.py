@@ -3,19 +3,18 @@
 
 '''
 nagios check Adaptec raid temperature plugin
+Last version: https://github.com/eking-go/public-tools
 '''
 
 __author__ = 'Nikolay Gatilov'
 __copyright__ = 'Nikolay Gatilov'
 __license__ = 'GPL'
-__version__ = '0.1.2015062318'
+__version__ = '0.1.2015062417'
 __maintainer__ = 'Nikolay Gatilov'
-__email__ = 'eking.work@gmail.com'
 
 import sys
 import subprocess
 import re
-import string
 import argparse
 
 
@@ -36,7 +35,7 @@ def get_temp_status():
             return (int(status.group(1)),
                     int(status.group(2)),
                     status.group(3))
-    return (0, 0, 'FAIL CHECK ARCCONF')
+    return (0, 0, 'FAIL CHECK ARCCONF: %s' % s_err)
 
 
 if __name__ == "__main__":  # main
