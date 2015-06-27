@@ -8,7 +8,7 @@ nagios check Adaptec raid temperature plugin
 __author__ = 'Nikolay Gatilov'
 __copyright__ = 'Nikolay Gatilov'
 __license__ = 'GPL'
-__version__ = '0.1.2015062318'
+__version__ = '0.1.2015062319'
 __maintainer__ = 'Nikolay Gatilov'
 __email__ = 'eking.work@gmail.com'
 
