@@ -9,7 +9,7 @@ Last version: https://github.com/eking-go/public-tools
 __author__ = 'Nikolay Gatilov'
 __copyright__ = 'Nikolay Gatilov'
 __license__ = 'GPL'
-__version__ = '1.0.2015062417'
+__version__ = '1.0.2015063011'
 __maintainer__ = 'Nikolay Gatilov'
 
 import sys
@@ -57,7 +57,7 @@ def join_conf(conf1, conf2):
     return conf2
 
 # ===================================== MAIN =================================
-if __name__ == '__main__':  # main
+if __name__ == '__main__':
     version_now = datetime.now().strftime(version_fmt)
 
     # create logger
