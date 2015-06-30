@@ -8,6 +8,7 @@ import re
 
 '''
 munin Adaptec raid temperature plugin
+If you want Fahrenheit scale instead of Celsuis - use stat[2] on the line 44
 Last version: https://github.com/eking-go/public-tools
 '''
 
@@ -40,7 +41,7 @@ def get_temp_status():
 if __name__ == "__main__":  # main
     if len(sys.argv) == 1:
         stat = get_temp_status()
-        print 'temp1.value %d' % stat[0]
+        print 'temp.value %d' % stat[0]
     elif sys.argv[1] == 'autoconf':
         print 'yes'
     elif sys.argv[1] == 'config':
@@ -48,8 +49,8 @@ if __name__ == "__main__":  # main
                'graph_args --base 1000 -l 0\n'
                'graph_vlabel Temperature\n'
                'graph_category Disk\n'
-               'graph_order temp1\n'
+               'graph_order temp\n'
                'graph_info This graph shows the temperature of'
                ' the RAID-Controller.\n'
-               'temp1.label Temperature C\n'
-               'temp1.draw LINE1\n')
+               'temp.label Temperature C\n'
+               'temp.draw LINE1\n')
