@@ -8,7 +8,7 @@ import re
 
 '''
 munin Adaptec raid temperature plugin
-If you want Fahrenheit scale instead of Celsuis - use stat[2] on the line 44
+If you want Fahrenheit scale instead of Celsuis - use stat[1] on the line 44
 Last version: https://github.com/eking-go/public-tools
 '''
 
