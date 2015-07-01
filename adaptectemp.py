@@ -34,7 +34,7 @@ def get_temp_status():
         status = t_re.match(line)
         if status:
             try:
-                tc = int(status.group(1)
+                tc = int(status.group(1))
             except:
                 tc = -1
             return (tc,
