@@ -15,7 +15,7 @@ Last version: https://github.com/eking-go/public-tools
 __author__ = 'Nikolay Gatilov'
 __copyright__ = 'Nikolay Gatilov'
 __license__ = 'GPL'
-__version__ = '0.1.2015063011'
+__version__ = '0.1.2015070116'
 __maintainer__ = 'Nikolay Gatilov'
 
 
@@ -41,6 +41,8 @@ def get_temp_status():
 if __name__ == "__main__":  # main
     if len(sys.argv) == 1:
         stat = get_temp_status()
+        while stat[0] < 0:
+            stat = get_temp_status()
         print 'temp.value %d' % stat[0]
     elif sys.argv[1] == 'autoconf':
         print 'yes'
