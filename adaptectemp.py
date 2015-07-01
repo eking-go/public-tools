@@ -33,7 +33,11 @@ def get_temp_status():
     for line in s_out:
         status = t_re.match(line)
         if status:
-            return (int(status.group(1)),
+            try:
+                tc = int(status.group(1)
+            except:
+                tc = -1
+            return (tc,
                     int(status.group(2)),
                     status.group(3))
     return (0, 0, 'FAIL CHECK ARCCONF: %s' % s_err)
