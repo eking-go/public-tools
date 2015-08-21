@@ -52,3 +52,9 @@ pre-commit git hook for check `__version__` in python scripts.
 The version format: `__version__ = 'major.minor.datetime'`
 datetime format (only digits, without ay non-digit characters) defined by
 global variables of this script - `VERSION_FMT`
+
+## dmesg.py 
+dmesg with human-readable timestamps
+I wrote this code just for fun and then found a similar tool:
+https://gist.github.com/saghul/542780
+but once wrote - let remains ;)
