@@ -9,7 +9,7 @@ Last version: https://github.com/eking-go/public-tools
 __author__ = 'Nikolay Gatilov'
 __copyright__ = 'Nikolay Gatilov'
 __license__ = 'GPL'
-__version__ = '0.2.2016010220'
+__version__ = '0.2.2016010222'
 __maintainer__ = 'Nikolay Gatilov'
 
 import sys
@@ -24,6 +24,7 @@ import socket
 
 
 def sftp_mkdir_p(sftp, path):
+    sftp.chdir('.')
     if path[-1] == '/':
         path = path[:-1]
     if path[0] == '/':
@@ -50,8 +51,12 @@ def archive(f, lpath, archtype):
         tar = tarfile.open(mode='w|', fileobj=f, bufsize=1024)
     print 'Recursive scan local path %s' % lpath
     filelist = []
-    for root, dirs, files in os.walk(lpath):
-        for name in files: filelist.append(os.path.join(root, name))
+    for i in lpath:
+        if os.path.isdir(i):
+            for root, dirs, files in os.walk(i):
+                for name in files: filelist.append(os.path.join(root, name))
+        else:
+            filelist.append(i)
     nf = len(filelist)
     n = 1
     print 'Found %d files' % nf
@@ -64,8 +69,11 @@ def archive(f, lpath, archtype):
 
 # ===================================== MAIN =================================
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--lpath', help='local path to recursive archiving')
+    parser = argparse.ArgumentParser(description=__doc__,
+                                     epilog='--lpath may be specified'
+                                            ' more than once')
+    parser.add_argument('--lpath', help='local path to recursive archiving',
+                        action='append')
     parser.add_argument('--node', help='IP/fqdn of node to connect')
     parser.add_argument('--key', help='key file (for ssh)', default=None)
     parser.add_argument('--port', help='ssh/ftp port', type=int)
