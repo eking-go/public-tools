@@ -58,3 +58,36 @@ dmesg with human-readable timestamps
 I wrote this code just for fun and then found a similar tool:
 https://gist.github.com/saghul/542780
 but once wrote - let remains ;)
+
+## remotearch.py
+
+Utility to create a backup (recursive), a local directory on a remote
+ server using ssh or ftp protocols. The archive file is created 
+directly on a remote server without creating a local copy. 
+Supported archives formats tar/tar.gz/tar.bz2 
+
+In the local system should have the following python modules - `ftputil` and `paramiko`
+
+
+```
+$ ./remotearch.py
+usage: remotearch.py [-h] [--lpath LPATH] [--node NODE] [--key KEY]
+                     [--port PORT] [--usr USR] [--pwd PWD]
+                     [--rarchive RARCHIVE] [--archtype ARCHTYPE]
+                     [--proto PROTO]
+
+archive local dir to remote FTP or SSH server. Last version:
+https://github.com/eking-go/public-tools
+
+optional arguments:
+  -h, --help           show this help message and exit
+  --lpath LPATH        local path to recursive archiving
+  --node NODE          IP/fqdn of node to connect
+  --key KEY            key file (for ssh)
+  --port PORT          ssh/ftp port
+  --usr USR            user for connect
+  --pwd PWD            password for user or key
+  --rarchive RARCHIVE  full file name of archive on remote node
+  --archtype ARCHTYPE  type of archive: tar/tbz/tgz
+  --proto PROTO        connection protocol - ftp/ssh
+```
