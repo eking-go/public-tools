@@ -12,7 +12,7 @@ Last version: https://github.com/eking-go/public-tools
 __author__ = 'Nikolay Gatilov'
 __copyright__ = 'Nikolay Gatilov'
 __license__ = 'GPL'
-__version__ = '1.1.2015062417'
+__version__ = '1.1.2016012917'
 __maintainer__ = 'Nikolay Gatilov'
 
 import subprocess
@@ -55,7 +55,7 @@ if __name__ == "__main__":
                             stderr=subprocess.PIPE)
     psub.wait()
     file_list = []
-    re_stat1 = re.compile('\s*[MARDCU]+\s+(.*)\s*$')
+    re_stat1 = re.compile('\s*[MARCU]+\s+(.*)\s*$')
     re_stat2 = re.compile('.*->\s+(.*)\s*$')
     for i in psub.stdout.readlines():
         stat = re_stat2.match(i)
