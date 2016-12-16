@@ -91,3 +91,48 @@ optional arguments:
   --archtype ARCHTYPE  type of archive: tar/tbz/tgz
   --proto PROTO        connection protocol - ftp/ssh
 ```
+
+
+## postmgr.py
+
+```
+~$ ./postmgr.py --help
+usage: postmgr.py [-h] [--mailqpath MAILQPATH] [--pspath PSPATH]
+                  [--log-mask LOG_MASK] [--log-dir LOG_DIR]
+                  [--maxdate MAXDATE] [--mindate MINDATE]
+                  [--from-regex FROM_REGEX] [--to-regex TO_REGEX]
+                  [--regex REGEX] [-d] [-s] [-q] [-f]
+
+Manage Postfix queue and parse logs. If defined option --regex (and it not
+Null) - script is parse logs, otherwise it working with mail queue. Date and
+time format - %Y-%m-%d %H:%M:%S (ISO format)
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --mailqpath MAILQPATH
+                        Full path to mailq binary (default: mailq)
+  --pspath PSPATH       Full path to postsuper binary (default: postsuper)
+  --log-mask LOG_MASK   Mask for log file names (default: mail.info*)
+  --log-dir LOG_DIR     Full path to log files dir (default: /var/log)
+  --maxdate MAXDATE     Max date|time for filter messages in mail queue
+                        (default: None)
+  --mindate MINDATE     Min date|time for filter messages in mail queue
+                        (default: None)
+  --from-regex FROM_REGEX
+                        RegEx for filter message by sender in queue (default:
+                        None)
+  --to-regex TO_REGEX   RegEx for filter message by recipient in queue
+                        (default: None)
+  --regex REGEX         RegEx for filter message by in logs (default: None)
+  -d, --del             If used (True) - delete filtered messages from queue
+                        (default: False)
+  -s, --save            If used (True) - save result in file
+                        postmgr.py_DATE_log.json (default: False)
+  -q, --quiet           If used (True) - do not write result to stdout
+                        (default: False)
+  -f, --fulllog         If used (True) - add to result information from log
+                        files, used only where working with mail queue
+                        (default: False)
+
+version: 1.0.20161216
+```
