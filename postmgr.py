@@ -21,7 +21,7 @@ import sys
 __author__ = 'Nikolay Gatilov'
 __copyright__ = 'Nikolay Gatilov'
 __license__ = 'GPL'
-__version__ = '1.0.2016121622'
+__version__ = '1.0.2016121917'
 __maintainer__ = 'Nikolay Gatilov'
 __email__ = 'eking.work@gmail.com'
 
@@ -139,8 +139,9 @@ class Postfix:
                 else:
                     apill[j] = set(i[j])
         APLL = {}
-        if len(l) != 0:
-            MIL = []
+        if len(l) == 0:
+            return {}
+        MIL = []
         for f in GF:
             MIL.append((l, f))
         with Pool() as p:
