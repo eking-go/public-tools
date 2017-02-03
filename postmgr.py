@@ -21,7 +21,7 @@ import sys
 __author__ = 'Nikolay Gatilov'
 __copyright__ = 'Nikolay Gatilov'
 __license__ = 'GPL'
-__version__ = '1.0.2016122614'
+__version__ = '1.0.2017020311'
 __maintainer__ = 'Nikolay Gatilov'
 __email__ = 'eking.work@gmail.com'
 
@@ -38,7 +38,7 @@ class Postfix:
            mailq='mailq', postsuper='postsuper',
            log_mask='mail.info*', log_dir='/var/log'
         '''
-        self.mail_reg = r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-.])*|MAILER-DAEMON'
+        self.mail_reg = r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.*[a-zA-Z0-9-.]*|MAILER-DAEMON'
         self.log_mask = log_mask
         self.log_dir = log_dir
         self.mailq = mailq
