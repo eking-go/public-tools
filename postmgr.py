@@ -21,7 +21,7 @@ import sys
 __author__ = 'Nikolay Gatilov'
 __copyright__ = 'Nikolay Gatilov'
 __license__ = 'GPL'
-__version__ = '1.0.2017020311'
+__version__ = '1.0.2017021515'
 __maintainer__ = 'Nikolay Gatilov'
 __email__ = 'eking.work@gmail.com'
 
@@ -43,6 +43,7 @@ class Postfix:
         self.log_dir = log_dir
         self.mailq = mailq
         self.postsuper = postsuper
+        self.postfixloglinereg = '.* postfix.*: (\w+): .*'
 
     def getFiles(self):
         '''Get list of log (rotated), may be gzipped) files '''
@@ -57,109 +58,175 @@ class Postfix:
            argument to this function - the full path to the file'''
         if path[-3:] == '.gz':
             try:
-                return gzip.open(path, mode='rt')
+                return gzip.open(path, mode='rb')
             except Exception as e:
                 print(str(e))
                 return None
         else:
             try:
-                return open(path)
+                return open(path, mode='rb')
             except Exception as e:
                 print(str(e))
                 return None
 
-    def getPostfixMailIDList(self, fh):
-        '''Parse log file and return list of Postfix mail id
-           like 760E05E7A2E that match the passed argument
-           argument to this function is tuple (f, r):
+    def getPostfixMailLogByID1(self, fh):
+        '''argument to this function is tuple (f, r):
            f - full path to log file
-           r - list of the regular expression which must be found in log
+           r - list of the Mail ID which must be found in log
+           This is first phase of parsing logs;
+           return dict MsgID: list of log lines
         '''
-        PMIL = {}
-        rlist = {}
-        for i in fh[1]:
-            rstr = '.* postfix.*: (\w+): (.*%s.*)' % i
-            rlist[i] = re.compile(rstr)
         f = self.getFileHandler(fh[0])
         if f is None:
-            return PMIL
+            return None
+        postfixline = re.compile(self.postfixloglinereg)
+        p = {}
         for line in f:
-            line = str(line)
-            for i in rlist.keys():
-                result = rlist[i].match(line)
-                if result:
-                    if i in PMIL.keys():
-                        PMIL[i].add(result.group(1))
-                    else:
-                        PMIL[i] = set([])
-                        PMIL[i].add(result.group(1))
-        f.close()
-        return PMIL
+            line = line.decode('utf-8')
+            plr = postfixline.match(line)
+            if plr:
+                mid = plr.group(1)
+                if mid in fh[1]:
+                    if mid not in p.keys():
+                        p[mid] = list()
+                    p[mid].append(line)
+        return p
 
-    def getPostfixLogLines(self, arg):
-        '''Return Dictionary with keys - Postfix message ID and
-        list of strings from log file with this message - from one log file'''
-        (IDList, FH) = arg
-        f = self.getFileHandler(FH)
-        PLL = {}
+    def getPostfixMailLogsByID(self, idlist):
+        '''Return dict (keys is MsgID) of list of strings from log file
+           correspond to this message - from All log files
+        '''
+        MIL = []
+        GF = self.getFiles()
+        for f in GF:
+            MIL.append((f, idlist))
+        with Pool() as p:
+            PILL = p.map(self.getPostfixMailLogsByID1, MIL)
+        p = {}
+        for pool_res in PILL:
+            if pool_res is None:
+                continue
+            for msg in pool_res.keys():
+                if msg not in p.keys():
+                    p[msg] = list()
+                p[msg].extend(pool_res[msg])
+        return p
+
+    def getPostfixMailLogs1(self, fh):
+        '''argument to this function is tuple (f, r):
+           f - full path to log file
+           r - list of the regular expression which must be found in log
+           This is first phase of parsing logs, return tuple (f, p, sd)
+           f - full path to log file
+           p - parsed/founded lines as dict {"MailID": [strings]}
+           sd - dict with founded MailID and position in file
+        '''
+        f = self.getFileHandler(fh[0])
         if f is None:
-            return PLL
-        regexlist = []
-        for i in IDList:
-            regexlist.append((i, re.compile(r'.* postfix\S*: %s: .*' % i)))
+            return None
+        rlist = {}
+        postfixline = re.compile(self.postfixloglinereg)
+        for i in fh[1]:
+            rstr = '(.*%s.*)' % i
+            rlist[i] = re.compile(rstr)
+        fpos = 0
+        p = {}
+        sd = {}
         for line in f:
-            line = str(line)
-            for r in regexlist:
-                result = r[1].match(line)
-                if result:
-                    if r[0] in PLL.keys():
-                        PLL[r[0]].append(result.group(0))
-                    else:
-                        PLL[r[0]] = []
-                        PLL[r[0]].append(result.group(0))
+            line = line.decode('utf-8')
+            plr = postfixline.match(line)
+            if plr:
+                mid = plr.group(1)
+                if mid not in sd.keys():
+                    sd[mid] = list()
+                sd[mid].append(fpos)
+                for reg in rlist.keys():
+                    r = rlist[reg].match(line)
+                    if r:
+                        if reg not in p.keys():
+                            p[reg] = {}
+                        if mid not in p[reg].keys():
+                            p[reg][mid] = list()
+                        p[reg][mid].append(line)
+            fpos = f.tell()
         f.close()
-        return PLL
+        return (fh[0], p, sd)
 
-    def getAllPLL(self, r):
-        '''Return Dictionary with keys - Postfix message ID and
-        list of strings from log file with this message - from All log files'''
+    def getPostfixMailLogs2(self, tpl):
+        '''tpl - is tuple (f, sdict)
+           f - full name on log file
+           sdict - dict with keys:
+                   file offset to string with messade id: message id
+           return dict with keys - message id: list of log lines
+        '''
+        f = self.getFileHandler(tpl[0])
+        if f is None:
+            return None
+        res = {}
+        for fid in sorted(tpl[1].keys()):
+            f.seek(fid)
+            line = f.readline().decode('utf-8')
+            for mid in tpl[1][fid]:
+                if mid not in res.keys():
+                    res[mid] = list()
+                res[mid].append(line)
+        return res
+
+    def getPostfixMailLogs(self, r):
+        '''Return dict (keys is regex) of dict with keys - Postfix message ID
+           and list of strings from log file with this message - from All log
+           files
+        '''
         MIL = []
         GF = self.getFiles()
         for f in GF:
             MIL.append((f, r))
         with Pool() as p:
-            PILL = p.map(self.getPostfixMailIDList, MIL)
-        l = set([])
-        apill = {}
-        for i in PILL:
-            for j in i.keys():
-                l |= i[j]
-                if j in apill.keys():
-                    apill[j] |= i[j]
-                else:
-                    apill[j] = set(i[j])
-        APLL = {}
-        if len(l) == 0:
-            return {}
-        MIL = []
-        for f in GF:
-            MIL.append((l, f))
+            PILL = p.map(self.getPostfixMailLogs1, MIL)
+        parsed = {}
+        fid = {}
+        mids = []
+        for pool_res in PILL:
+            if pool_res is None:
+                continue
+            for reg in pool_res[1].keys():
+                if reg not in parsed.keys():
+                    parsed[reg] = {}
+                mids.extend(pool_res[1][reg])
+                for mid in pool_res[1][reg].keys():
+                    if mid not in parsed[reg].keys():
+                        parsed[reg][mid] = list()
+                    parsed[reg][mid].extend(pool_res[1][reg][mid])
+            mids = set(mids)
+            mids = list(mids)
+            for mid in pool_res[2].keys():
+                if mid in mids:
+                    if pool_res[0] not in fid.keys():
+                        fid[pool_res[0]] = {}
+                    for sid in pool_res[2][mid]:
+                        if sid not in fid[pool_res[0]].keys():
+                            fid[pool_res[0]][sid] = list()
+                        fid[pool_res[0]][sid].append(mid)
+        poolarg = []
+        for filen in fid.keys():
+            tmp = {}
+            for sid in fid[filen].keys():
+                tmpset = set(fid[filen][sid])
+                tmp[sid] = list(tmpset)
+            poolarg.append((filen, tmp))
         with Pool() as p:
-            PLL = p.map(self.getPostfixLogLines, MIL)
-        for i in PLL:
-            for j in i.keys():
-                if j not in APLL.keys():
-                    APLL[j] = []
-                    APLL[j].extend(i[j])
-                else:
-                    APLL[j].extend(i[j])
-        for i in apill.keys():
-            setid = apill[i]
-            apill[i] = {}
-            for j in setid:
-                if j in APLL.keys():
-                    apill[i][j] = APLL[j]
-        return apill
+            pl = p.map(self.getPostfixMailLogs2, poolarg)
+        for f in pl:
+            if f is None:
+                continue
+            for reg in parsed.keys():
+                for mid in f.keys():
+                    if mid not in parsed[reg].keys():
+                        parsed[reg][mid] = list()
+                    for i in f[mid]:
+                        if i not in parsed[reg][mid]:
+                            parsed[reg][mid].append(i)
+        return parsed
 
     def dropMessage(self, pmid):
         '''Drop message from postfix queue, return tuple
@@ -342,6 +409,11 @@ if __name__ == '__main__':  # main
                      help=('If used (True) - add to result information '
                            'from log files, used only where working with '
                            'mail queue (default: %(default)s)'))
+    opt.add_argument('-z', '--gzip-json',
+                     dest='gzipjson',
+                     action='store_true',
+                     help=('If used (True) - seve result as gzippeg json '
+                           '(default: %(default)s)'))
 
     options = opt.parse_args()
 
@@ -351,7 +423,7 @@ if __name__ == '__main__':  # main
                 log_dir=options.log_dir)
     if options.regex is not None:
         print('Parsing logs...')
-        res = p.getAllPLL(options.regex)
+        res = p.getPostfixMailLogs(options.regex)
     else:
         print('Parsing mail queue...')
         if options.mindate is not None:
@@ -374,29 +446,21 @@ if __name__ == '__main__':  # main
             idlist = list(res.keys())
             if 'unparsed' in idlist:
                 idlist.remove('unparsed')
-            GF = p.getFiles()
-            APLL = {}
-            MIL = []
-            for f in GF:
-                MIL.append((idlist, f))
-            with Pool() as pl:
-                PLL = pl.map(p.getPostfixLogLines, MIL)
-            for i in PLL:
-                for j in i.keys():
-                    if j not in APLL.keys():
-                        APLL[j] = []
-                        APLL[j].extend(i[j])
-                    else:
-                        APLL[j].extend(i[j])
+            logs = p.getPostfixMailLogsByID(idlist)
             for i in res.keys():
-                if i in APLL.keys():
-                    res[i]['log'] = APLL[i]
+                if i in logs.keys():
+                    res[i]['log'] = logs[i]
 
     if not options.quiet:
         print(json.dumps(res, indent=4, sort_keys=True))
     if options.save:
         fname = '%s_%s_log.json' % (sys.argv[0],
                                     datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
-        with open(fname, encoding='utf-8', mode='w+') as f:
-            json.dump(res, f, indent=4, sort_keys=True)
+        if options.gzipjson:
+            fname = '%s.gz' % fname
+            with gzip.open(fname, 'wb') as f:
+                json.dump(res, f, indent=4, sort_keys=True)
+        else:
+            with open(fname, encoding='utf-8', mode='w+') as f:
+                json.dump(res, f, indent=4, sort_keys=True)
     print('\n Found %d records\n' % len(res))
