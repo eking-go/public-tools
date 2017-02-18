@@ -21,7 +21,7 @@ import sys
 __author__ = 'Nikolay Gatilov'
 __copyright__ = 'Nikolay Gatilov'
 __license__ = 'GPL'
-__version__ = '1.0.2017021515'
+__version__ = '1.0.2017021823'
 __maintainer__ = 'Nikolay Gatilov'
 __email__ = 'eking.work@gmail.com'
 
@@ -412,7 +412,7 @@ if __name__ == '__main__':  # main
     opt.add_argument('-z', '--gzip-json',
                      dest='gzipjson',
                      action='store_true',
-                     help=('If used (True) - seve result as gzippeg json '
+                     help=('If used (True) - save result as gzipped json '
                            '(default: %(default)s)'))
 
     options = opt.parse_args()
@@ -458,8 +458,8 @@ if __name__ == '__main__':  # main
                                     datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
         if options.gzipjson:
             fname = '%s.gz' % fname
-            with gzip.open(fname, 'wb') as f:
-                json.dump(res, f, indent=4, sort_keys=True)
+            with gzip.open(fname, 'w') as f:
+                f.write(json.dumps(res, indent=4, sort_keys=True).encode('utf-8'))                                
         else:
             with open(fname, encoding='utf-8', mode='w+') as f:
                 json.dump(res, f, indent=4, sort_keys=True)
