@@ -13,7 +13,6 @@ import re
 import os
 import fnmatch
 import gzip
-from multiprocessing import Pool
 import subprocess
 import datetime
 import sys
@@ -21,7 +20,7 @@ import sys
 __author__ = 'Nikolay Gatilov'
 __copyright__ = 'Nikolay Gatilov'
 __license__ = 'GPL'
-__version__ = '1.0.2017021823'
+__version__ = '1.0.2017032021'
 __maintainer__ = 'Nikolay Gatilov'
 __email__ = 'eking.work@gmail.com'
 
@@ -33,7 +32,8 @@ class Postfix:
                  mailq='mailq',
                  postsuper='postsuper',
                  log_mask='mail.info*',
-                 log_dir='/var/log'):
+                 log_dir='/var/log',
+                 multiprocess=True):
         '''You can set up full path to binary files and logs, default is:
            mailq='mailq', postsuper='postsuper',
            log_mask='mail.info*', log_dir='/var/log'
@@ -44,6 +44,9 @@ class Postfix:
         self.mailq = mailq
         self.postsuper = postsuper
         self.postfixloglinereg = '.* postfix.*: (\w+): .*'
+        self.multiprocess = multiprocess
+        if multiprocess:
+            from multiprocessing import Pool
 
     def getFiles(self):
         '''Get list of log (rotated), may be gzipped) files '''
@@ -100,8 +103,11 @@ class Postfix:
         GF = self.getFiles()
         for f in GF:
             MIL.append((f, idlist))
-        with Pool() as p:
-            PILL = p.map(self.getPostfixMailLogsByID1, MIL)
+        if self.multiprocess:
+            with Pool() as p:
+                PILL = p.map(self.getPostfixMailLogsByID1, MIL)
+        else:
+            PILL = map(self.getPostfixMailLogsByID1, MIL)
         p = {}
         for pool_res in PILL:
             if pool_res is None:
@@ -181,8 +187,11 @@ class Postfix:
         GF = self.getFiles()
         for f in GF:
             MIL.append((f, r))
-        with Pool() as p:
-            PILL = p.map(self.getPostfixMailLogs1, MIL)
+        if self.multiprocess:
+            with Pool() as p:
+                PILL = p.map(self.getPostfixMailLogs1, MIL)
+        else:
+            PILL = map(self.getPostfixMailLogs1, MIL)
         parsed = {}
         fid = {}
         mids = []
@@ -214,8 +223,11 @@ class Postfix:
                 tmpset = set(fid[filen][sid])
                 tmp[sid] = list(tmpset)
             poolarg.append((filen, tmp))
-        with Pool() as p:
-            pl = p.map(self.getPostfixMailLogs2, poolarg)
+        if self.multiprocess:
+            with Pool() as p:
+                pl = p.map(self.getPostfixMailLogs2, poolarg)
+        else:
+            pl = map(self.getPostfixMailLogs2, poolarg)
         for f in pl:
             if f is None:
                 continue
