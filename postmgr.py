@@ -16,6 +16,7 @@ import gzip
 import subprocess
 import datetime
 import sys
+from multiprocessing import Pool
 
 __author__ = 'Nikolay Gatilov'
 __copyright__ = 'Nikolay Gatilov'
@@ -45,8 +46,6 @@ class Postfix:
         self.postsuper = postsuper
         self.postfixloglinereg = '.* postfix.*: (\w+): .*'
         self.multiprocess = multiprocess
-        if multiprocess:
-            from multiprocessing import Pool
 
     def getFiles(self):
         '''Get list of log (rotated), may be gzipped) files '''
