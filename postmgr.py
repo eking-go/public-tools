@@ -20,7 +20,7 @@ import sys
 __author__ = 'Nikolay Gatilov'
 __copyright__ = 'Nikolay Gatilov'
 __license__ = 'GPL'
-__version__ = '1.0.2017032021'
+__version__ = '1.0.2017032112'
 __maintainer__ = 'Nikolay Gatilov'
 __email__ = 'eking.work@gmail.com'
 
@@ -93,6 +93,7 @@ class Postfix:
                     if mid not in p.keys():
                         p[mid] = list()
                     p[mid].append(line)
+        f.close()
         return p
 
     def getPostfixMailLogsByID(self, idlist):
@@ -176,6 +177,7 @@ class Postfix:
                 if mid not in res.keys():
                     res[mid] = list()
                 res[mid].append(line)
+        f.close()
         return res
 
     def getPostfixMailLogs(self, r):
