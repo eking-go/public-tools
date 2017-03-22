@@ -21,7 +21,7 @@ from multiprocessing import Pool
 __author__ = 'Nikolay Gatilov'
 __copyright__ = 'Nikolay Gatilov'
 __license__ = 'GPL'
-__version__ = '1.0.2017032217'
+__version__ = '1.0.2017032218'
 __maintainer__ = 'Nikolay Gatilov'
 __email__ = 'eking.work@gmail.com'
 
@@ -153,6 +153,7 @@ class Postfix:
 
     def getPostfixMLLines(self, fs):
         '''
+        return dict {reg: {MailID: [logStrings, ]}}
         '''
         f = self.getFileHandler(fs[0])
         if f is None:
@@ -171,7 +172,7 @@ class Postfix:
         f.close()
         return reg_d
 
-    def getPostfixMailLogs_(self, r):
+    def getPostfixMailLogs(self, r):
         '''Return dict (keys is regex) of dict with keys - Postfix message ID
            and list of strings from log file with this message - from All log
            files
@@ -222,129 +223,6 @@ class Postfix:
                         reg_d[reg][mid] = []
                     reg_d[reg][mid].extend(i[reg][mid])
         return reg_d
-
-    def getPostfixMailLogs1(self, fh):
-        '''argument to this function is tuple (f, r):
-           f - full path to log file
-           r - list of the regular expression which must be found in log
-           This is first phase of parsing logs, return tuple (f, p, sd)
-           f - full path to log file
-           p - parsed/founded lines as dict {"MailID": [strings]}
-           sd - dict with founded MailID and position in file
-        '''
-        f = self.getFileHandler(fh[0])
-        if f is None:
-            return None
-        rlist = {}
-        postfixline = re.compile(self.postfixloglinereg)
-        for i in fh[1]:
-            rstr = '(.*%s.*)' % i
-            rlist[i] = re.compile(rstr)
-        fpos = 0
-        p = {}
-        sd = {}
-        for line in f:
-            line = line.decode('utf-8')
-            plr = postfixline.match(line)
-            if plr:
-                mid = plr.group(1)
-                if mid not in sd.keys():
-                    sd[mid] = list()
-                sd[mid].append(fpos)
-                for reg in rlist.keys():
-                    r = rlist[reg].match(line)
-                    if r:
-                        if reg not in p.keys():
-                            p[reg] = {}
-                        if mid not in p[reg].keys():
-                            p[reg][mid] = list()
-                        p[reg][mid].append(line)
-            fpos = f.tell()
-        f.close()
-        return (fh[0], p, sd)
-
-    def getPostfixMailLogs2(self, tpl):
-        '''tpl - is tuple (f, sdict)
-           f - full name on log file
-           sdict - dict with keys:
-                   file offset to string with messade id: message id
-           return dict with keys - message id: list of log lines
-        '''
-        f = self.getFileHandler(tpl[0])
-        if f is None:
-            return None
-        res = {}
-        for fid in sorted(tpl[1].keys()):
-            f.seek(fid)
-            line = f.readline().decode('utf-8')
-            for mid in tpl[1][fid]:
-                if mid not in res.keys():
-                    res[mid] = list()
-                res[mid].append(line)
-        f.close()
-        return res
-
-    def getPostfixMailLogs(self, r):
-        '''Return dict (keys is regex) of dict with keys - Postfix message ID
-           and list of strings from log file with this message - from All log
-           files
-        '''
-        MIL = []
-        GF = self.getFiles()
-        for f in GF:
-            MIL.append((f, r))
-        if self.multiprocess:
-            with Pool() as p:
-                PILL = p.map(self.getPostfixMailLogs1, MIL)
-        else:
-            PILL = map(self.getPostfixMailLogs1, MIL)
-        parsed = {}
-        fid = {}
-        mids = []
-        for pool_res in PILL:
-            if pool_res is None:
-                continue
-            for reg in pool_res[1].keys():
-                if reg not in parsed.keys():
-                    parsed[reg] = {}
-                mids.extend(pool_res[1][reg])
-                for mid in pool_res[1][reg].keys():
-                    if mid not in parsed[reg].keys():
-                        parsed[reg][mid] = list()
-                    parsed[reg][mid].extend(pool_res[1][reg][mid])
-            mids = set(mids)
-            mids = list(mids)
-            for mid in pool_res[2].keys():
-                if mid in mids:
-                    if pool_res[0] not in fid.keys():
-                        fid[pool_res[0]] = {}
-                    for sid in pool_res[2][mid]:
-                        if sid not in fid[pool_res[0]].keys():
-                            fid[pool_res[0]][sid] = list()
-                        fid[pool_res[0]][sid].append(mid)
-        poolarg = []
-        for filen in fid.keys():
-            tmp = {}
-            for sid in fid[filen].keys():
-                tmpset = set(fid[filen][sid])
-                tmp[sid] = list(tmpset)
-            poolarg.append((filen, tmp))
-        if self.multiprocess:
-            with Pool() as p:
-                pl = p.map(self.getPostfixMailLogs2, poolarg)
-        else:
-            pl = map(self.getPostfixMailLogs2, poolarg)
-        for f in pl:
-            if f is None:
-                continue
-            for reg in parsed.keys():
-                for mid in f.keys():
-                    if mid not in parsed[reg].keys():
-                        parsed[reg][mid] = list()
-                    for i in f[mid]:
-                        if i not in parsed[reg][mid]:
-                            parsed[reg][mid].append(i)
-        return parsed
 
     def dropMessage(self, pmid):
         '''Drop message from postfix queue, return tuple
@@ -541,7 +419,7 @@ if __name__ == '__main__':  # main
                 log_dir=options.log_dir)
     if options.regex is not None:
         print('Parsing logs...')
-        res = p.getPostfixMailLogs_(options.regex)
+        res = p.getPostfixMailLogs(options.regex)
     else:
         print('Parsing mail queue...')
         if options.mindate is not None:
