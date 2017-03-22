@@ -21,7 +21,7 @@ from multiprocessing import Pool
 __author__ = 'Nikolay Gatilov'
 __copyright__ = 'Nikolay Gatilov'
 __license__ = 'GPL'
-__version__ = '1.0.2017032216'
+__version__ = '1.0.2017032217'
 __maintainer__ = 'Nikolay Gatilov'
 __email__ = 'eking.work@gmail.com'
 
@@ -139,12 +139,12 @@ class Postfix:
             plr = postfixline.match(line)
             if plr:
                 PMsgID = plr.group(1)
+                if PMsgID not in id_seek_d.keys():
+                    id_seek_d[PMsgID] = []
+                id_seek_d[PMsgID].append(fpos) 
                 for reg in fr[1]:
                     if rlist[reg].match(line):
-                        if PMsgID not in id_seek_d.keys():
-                            id_seek_d[PMsgID] = []
-                        id_seek_d[PMsgID].append(fpos)
-                        if reg not in reg_id_d.keys():
+                       if reg not in reg_id_d.keys():
                             reg_id_d[reg] = []
                         reg_id_d[reg].append(PMsgID)
             fpos = f.tell()
