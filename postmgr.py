@@ -21,7 +21,7 @@ from multiprocessing import Pool
 __author__ = 'Nikolay Gatilov'
 __copyright__ = 'Nikolay Gatilov'
 __license__ = 'GPL'
-__version__ = '1.0.2017032112'
+__version__ = '1.0.2017032216'
 __maintainer__ = 'Nikolay Gatilov'
 __email__ = 'eking.work@gmail.com'
 
@@ -117,6 +117,110 @@ class Postfix:
                     p[msg] = list()
                 p[msg].extend(pool_res[msg])
         return p
+
+    def getPostfixMLIndexAndRegex(self, fr):
+        '''This method parse postfix log file an return index by
+           Postfix_mail_id as dictionary {MID: [seek_pos,]}
+           and dictionary {regex: [MID]}
+        '''
+        f = self.getFileHandler(fr[0])
+        if f is None:
+            return ((fr[0], {}), {})
+        postfixline = re.compile(self.postfixloglinereg)
+        reg_id_d = {}
+        id_seek_d = {}
+        rlist = {}
+        for i in fr[1]:
+            rstr = '(.*%s.*)' % i
+            rlist[i] = re.compile(rstr)
+        fpos = 0
+        for line in f:
+            line = line.decode('utf-8')
+            plr = postfixline.match(line)
+            if plr:
+                PMsgID = plr.group(1)
+                for reg in fr[1]:
+                    if rlist[reg].match(line):
+                        if PMsgID not in id_seek_d.keys():
+                            id_seek_d[PMsgID] = []
+                        id_seek_d[PMsgID].append(fpos)
+                        if reg not in reg_id_d.keys():
+                            reg_id_d[reg] = []
+                        reg_id_d[reg].append(PMsgID)
+            fpos = f.tell()
+        f.close()
+        return ((fr[0], id_seek_d), reg_id_d)
+
+    def getPostfixMLLines(self, fs):
+        '''
+        '''
+        f = self.getFileHandler(fs[0])
+        if f is None:
+            return {}
+        reg_d = {}
+        for fpos in sorted(fs[1].keys()):
+            f.seek(fpos)
+            line = f.readline().decode('utf-8')
+            for reg in fs[1][fpos]:
+                if reg not in reg_d.keys():
+                    reg_d[reg] = {}
+                for mid in fs[1][fpos][reg]:
+                    if mid not in reg_d[reg].keys():
+                        reg_d[reg][mid] = []
+                    reg_d[reg][mid].append(line)
+        f.close()
+        return reg_d
+
+    def getPostfixMailLogs_(self, r):
+        '''Return dict (keys is regex) of dict with keys - Postfix message ID
+           and list of strings from log file with this message - from All log
+           files
+        '''
+        fr = []
+        gf = self.getFiles()
+        for f in gf:
+            fr.append((f, r))
+        if self.multiprocess:
+            with Pool() as p:
+                res_l = p.map(self.getPostfixMLIndexAndRegex, fr)
+        else:
+            res_l = map(self.getPostfixMLIndexAndRegex, fr)
+        reg_d = {}
+        for i in res_l:
+            for reg in i[1].keys():
+                if reg not in reg_d.keys():
+                    reg_d[reg] = []
+                reg_d[reg] = list(set(reg_d[reg].extend(i[1][reg])))
+        fs = []
+        for i in res_l:
+            file_path = i[0][0]
+            seek_d = {}
+            for mid in i[0][1].keys():
+                for reg in reg_d.keys():
+                    if mid in reg_d[reg]:
+                        for sid in i[0][1][mid]:
+                            if sid not in seek_d.keys():
+                                seek_d[sid] = {}
+                            if reg not in seek_d[sid].keys():
+                                seek_d[sid][reg] = []
+                            seek_d[sid][reg].append(mid)
+            if seek_d != {}:
+                fs.append((file_path, seek_d))
+        if self.multiprocess:
+            with Pool() as p:
+                res_l = p.map(self.getPostfixMLLines, fs)
+        else:
+            res_l = map(self.getPostfixMLLines, fs)
+        reg_d = {}
+        for i in res_l:
+            for reg in i.keys():
+                if reg not in reg_d.keys():
+                    reg_d[reg] = {}
+                for mid in i[reg].keys():
+                    if mid not in reg_d[reg].keys():
+                        reg_d[reg][mid] = []
+                    reg_d[reg][mid].extend(i[reg][mid])
+        return reg_d
 
     def getPostfixMailLogs1(self, fh):
         '''argument to this function is tuple (f, r):
@@ -436,7 +540,7 @@ if __name__ == '__main__':  # main
                 log_dir=options.log_dir)
     if options.regex is not None:
         print('Parsing logs...')
-        res = p.getPostfixMailLogs(options.regex)
+        res = p.getPostfixMailLogs_(options.regex)
     else:
         print('Parsing mail queue...')
         if options.mindate is not None:
@@ -472,7 +576,7 @@ if __name__ == '__main__':  # main
         if options.gzipjson:
             fname = '%s.gz' % fname
             with gzip.open(fname, 'w') as f:
-                f.write(json.dumps(res, indent=4, sort_keys=True).encode('utf-8'))                                
+                f.write(json.dumps(res, indent=4, sort_keys=True).encode('utf-8'))
         else:
             with open(fname, encoding='utf-8', mode='w+') as f:
                 json.dump(res, f, indent=4, sort_keys=True)
