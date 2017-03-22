@@ -146,7 +146,7 @@ class Postfix:
                     if rlist[reg].match(line):
                        if reg not in reg_id_d.keys():
                             reg_id_d[reg] = []
-                        reg_id_d[reg].append(PMsgID)
+                       reg_id_d[reg].append(PMsgID)
             fpos = f.tell()
         f.close()
         return ((fr[0], id_seek_d), reg_id_d)
