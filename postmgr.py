@@ -190,7 +190,8 @@ class Postfix:
             for reg in i[1].keys():
                 if reg not in reg_d.keys():
                     reg_d[reg] = []
-                reg_d[reg] = list(set(reg_d[reg].extend(i[1][reg])))
+                reg_d[reg].extend(i[1][reg])
+                reg_d[reg] = list(set(reg_d[reg]))
         fs = []
         for i in res_l:
             file_path = i[0][0]
