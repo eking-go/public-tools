@@ -21,7 +21,7 @@ from multiprocessing import Pool
 __author__ = 'Nikolay Gatilov'
 __copyright__ = 'Nikolay Gatilov'
 __license__ = 'GPL'
-__version__ = '1.0.2017032311'
+__version__ = '1.0.2017032313'
 __maintainer__ = 'Nikolay Gatilov'
 __email__ = 'eking.work@gmail.com'
 
@@ -402,6 +402,11 @@ if __name__ == '__main__':  # main
                      action='store_true',
                      help=('If used (True) - save result in file '
                            '%(prog)s_DATE_log.json (default: %(default)s)'))
+    opt.add_argument('-j', '--json-only',
+                     dest='json',
+                     action='store_true',
+                     help=('If used (True) - return to stdout only json '
+                           ' (default: %(default)s)'))
     opt.add_argument('-q', '--quiet',
                      dest='quiet',
                      action='store_true',
@@ -438,10 +443,12 @@ if __name__ == '__main__':  # main
                 multiprocess=options.multiproc,
                 noindex=options.noindex)
     if options.regex is not None:
-        print('Parsing logs...')
+        if not options.json:
+            print('Parsing logs...')
         res = p.getPostfixMailLogs(options.regex)
     else:
-        print('Parsing mail queue...')
+        if not options.json:
+            print('Parsing mail queue...')
         if options.mindate is not None:
             mindate = datetime.datetime.strptime(options.mindate,
                                                  '%Y-%m-%d %H:%M:%S')
@@ -458,7 +465,8 @@ if __name__ == '__main__':  # main
                          to_regex=options.to_regex,
                          delete=options.delete)
         if options.fulllog:
-            print('Parsing logs...')
+            if not options.json:
+                print('Parsing logs...')
             idlist = list(res.keys())
             if 'unparsed' in idlist:
                 idlist.remove('unparsed')
@@ -479,4 +487,5 @@ if __name__ == '__main__':  # main
         else:
             with open(fname, encoding='utf-8', mode='w+') as f:
                 json.dump(res, f, indent=4, sort_keys=True)
-    print('\n Found %d records\n' % len(res))
+    if not options.json:
+        print('\n Found %d records\n' % len(res))
