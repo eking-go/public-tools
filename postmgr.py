@@ -21,7 +21,7 @@ from multiprocessing import Pool
 __author__ = 'Nikolay Gatilov'
 __copyright__ = 'Nikolay Gatilov'
 __license__ = 'GPL'
-__version__ = '1.0.2017032310'
+__version__ = '1.0.2017032311'
 __maintainer__ = 'Nikolay Gatilov'
 __email__ = 'eking.work@gmail.com'
 
@@ -107,9 +107,9 @@ class Postfix:
             MIL.append((f, idlist))
         if self.multiprocess:
             with Pool() as p:
-                PILL = p.map(self.getPostfixMailLogsByID1, MIL)
+                PILL = p.map(self.getPostfixMailLogByID1, MIL)
         else:
-            PILL = map(self.getPostfixMailLogsByID1, MIL)
+            PILL = map(self.getPostfixMailLogByID1, MIL)
         p = {}
         for pool_res in PILL:
             if pool_res is None:
