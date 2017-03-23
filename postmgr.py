@@ -21,7 +21,7 @@ from multiprocessing import Pool
 __author__ = 'Nikolay Gatilov'
 __copyright__ = 'Nikolay Gatilov'
 __license__ = 'GPL'
-__version__ = '1.0.2017032218'
+__version__ = '1.0.2017032310'
 __maintainer__ = 'Nikolay Gatilov'
 __email__ = 'eking.work@gmail.com'
 
@@ -34,7 +34,8 @@ class Postfix:
                  postsuper='postsuper',
                  log_mask='mail.info*',
                  log_dir='/var/log',
-                 multiprocess=True):
+                 multiprocess=True,
+                 noindex=False):
         '''You can set up full path to binary files and logs, default is:
            mailq='mailq', postsuper='postsuper',
            log_mask='mail.info*', log_dir='/var/log'
@@ -46,6 +47,7 @@ class Postfix:
         self.postsuper = postsuper
         self.postfixloglinereg = '.* postfix.*: (\w+): .*'
         self.multiprocess = multiprocess
+        self.noindex = noindex
 
     def getFiles(self):
         '''Get list of log (rotated), may be gzipped) files '''
@@ -139,14 +141,15 @@ class Postfix:
             plr = postfixline.match(line)
             if plr:
                 PMsgID = plr.group(1)
-                if PMsgID not in id_seek_d.keys():
-                    id_seek_d[PMsgID] = []
-                id_seek_d[PMsgID].append(fpos) 
+                if not self.noindex:
+                    if PMsgID not in id_seek_d.keys():
+                        id_seek_d[PMsgID] = []
+                    id_seek_d[PMsgID].append(fpos)
                 for reg in fr[1]:
                     if rlist[reg].match(line):
-                       if reg not in reg_id_d.keys():
+                        if reg not in reg_id_d.keys():
                             reg_id_d[reg] = []
-                       reg_id_d[reg].append(PMsgID)
+                        reg_id_d[reg].append(PMsgID)
             fpos = f.tell()
         f.close()
         return ((fr[0], id_seek_d), reg_id_d)
@@ -193,6 +196,11 @@ class Postfix:
                     reg_d[reg] = []
                 reg_d[reg].extend(i[1][reg])
                 reg_d[reg] = list(set(reg_d[reg]))
+        if self.noindex:
+            reg_dr = {}
+            for reg in reg_d.keys():
+                reg_dr[reg] = self.getPostfixMailLogsByID(reg_d[reg])
+            return reg_dr
         fs = []
         for i in res_l:
             file_path = i[0][0]
@@ -410,13 +418,25 @@ if __name__ == '__main__':  # main
                      action='store_true',
                      help=('If used (True) - save result as gzipped json '
                            '(default: %(default)s)'))
+    opt.add_argument('-o', '--one-proc',
+                     dest='multiproc',
+                     action='store_false',
+                     help=('If used (False) - do not use multiprocessing'
+                           '(default: %(default)s)'))
+    opt.add_argument('-n', '--noindex',
+                     dest='noindex',
+                     action='store_true',
+                     help=('If used (True) - no index log files, '
+                           'use less memory (default: %(default)s)'))
 
     options = opt.parse_args()
 
     p = Postfix(mailq=options.mailqpath,
                 postsuper=options.pspath,
                 log_mask=options.log_mask,
-                log_dir=options.log_dir)
+                log_dir=options.log_dir,
+                multiprocess=options.multiproc,
+                noindex=options.noindex)
     if options.regex is not None:
         print('Parsing logs...')
         res = p.getPostfixMailLogs(options.regex)
