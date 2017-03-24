@@ -21,7 +21,7 @@ from multiprocessing import Pool
 __author__ = 'Nikolay Gatilov'
 __copyright__ = 'Nikolay Gatilov'
 __license__ = 'GPL'
-__version__ = '1.0.2017032313'
+__version__ = '1.0.2017032412'
 __maintainer__ = 'Nikolay Gatilov'
 __email__ = 'eking.work@gmail.com'
 
@@ -106,8 +106,7 @@ class Postfix:
         for f in GF:
             MIL.append((f, idlist))
         if self.multiprocess:
-            with Pool() as p:
-                PILL = p.map(self.getPostfixMailLogByID1, MIL)
+            PILL = Pool().map(self.getPostfixMailLogByID1, MIL)
         else:
             PILL = map(self.getPostfixMailLogByID1, MIL)
         p = {}
@@ -185,10 +184,9 @@ class Postfix:
         for f in gf:
             fr.append((f, r))
         if self.multiprocess:
-            with Pool() as p:
-                res_l = p.map(self.getPostfixMLIndexAndRegex, fr)
+            res_l = Pool().map(self.getPostfixMLIndexAndRegex, fr)
         else:
-            res_l = map(self.getPostfixMLIndexAndRegex, fr)
+            res_l = list(map(self.getPostfixMLIndexAndRegex, fr))
         reg_d = {}
         for i in res_l:
             for reg in i[1].keys():
@@ -217,8 +215,7 @@ class Postfix:
             if seek_d != {}:
                 fs.append((file_path, seek_d))
         if self.multiprocess:
-            with Pool() as p:
-                res_l = p.map(self.getPostfixMLLines, fs)
+            res_l = Pool().map(self.getPostfixMLLines, fs)
         else:
             res_l = map(self.getPostfixMLLines, fs)
         reg_d = {}
