@@ -96,12 +96,11 @@ optional arguments:
 ## postmgr.py
 
 ```
-~$ ./postmgr.py --help
 usage: postmgr.py [-h] [--mailqpath MAILQPATH] [--pspath PSPATH]
                   [--log-mask LOG_MASK] [--log-dir LOG_DIR]
                   [--maxdate MAXDATE] [--mindate MINDATE]
                   [--from-regex FROM_REGEX] [--to-regex TO_REGEX]
-                  [--regex REGEX] [-d] [-s] [-q] [-f]
+                  [--regex REGEX] [-d] [-s] [-j] [-q] [-f] [-z] [-o] [-n]
 
 Manage Postfix queue and parse logs. If defined option --regex (and it not
 Null) - script is parse logs, otherwise it working with mail queue. Date and
@@ -128,11 +127,117 @@ optional arguments:
                         (default: False)
   -s, --save            If used (True) - save result in file
                         postmgr.py_DATE_log.json (default: False)
+  -j, --json-only       If used (True) - return to stdout only json (default:
+                        False)
   -q, --quiet           If used (True) - do not write result to stdout
                         (default: False)
   -f, --fulllog         If used (True) - add to result information from log
                         files, used only where working with mail queue
                         (default: False)
+  -z, --gzip-json       If used (True) - save result as gzipped json (default:
+                        False)
+  -o, --one-proc        If used (False) - do not use multiprocessing(default:
+                        True)
+  -n, --noindex         If used (True) - no index log files, use less memory
+                        (default: False)
 
-version: 1.0.20161216
+version: 1.0.2017032412
+```
+
+## check_cassandra.py
+
+```
+usage: check_cassandra.py [-h] [--nodetool NODETOOL] [--host HOST]
+                          [--port PORT] [--user USER] [--password PASSWORD]
+                          [--hcc HCC] [--without_gossip] [--without_thrift]
+                          [--without_native] [--fast_check]
+                          [--coordinator_percentile COORDINATOR_PERCENTILE]
+                          [--coordinator_RLW COORDINATOR_RLW]
+                          [--coordinator_RLC COORDINATOR_RLC]
+                          [--coordinator_WLW COORDINATOR_WLW]
+                          [--coordinator_WLC COORDINATOR_WLC]
+                          [--keyspace KEYSPACE]
+                          [--ks_read_latency_w KS_READ_LATENCY_W]
+                          [--ks_read_latency_c KS_READ_LATENCY_C]
+                          [--ks_write_latency_w KS_WRITE_LATENCY_W]
+                          [--ks_write_latency_c KS_WRITE_LATENCY_C]
+
+NRPE plugin with perfomance data for check cassandra node state.
+
+It get info from:
+
+* `nodetool info`
+http://docs.datastax.com/en/archived/cassandra/3.x/cassandra/tools/toolsInfo.html
+https://cassandra.apache.org/doc/latest/tools/nodetool/info.html
+
+* `nodetool proxyhistograms`
+http://docs.datastax.com/en/archived/cassandra/3.x/cassandra/tools/toolsProxyHistograms.html
+https://cassandra.apache.org/doc/latest/tools/nodetool/proxyhistograms.html
+
+* `nodetool tablestats`
+http://docs.datastax.com/en/archived/cassandra/3.x/cassandra/tools/toolsTablestats.html
+https://cassandra.apache.org/doc/latest/tools/nodetool/tablestats.html
+
+If you do not use --keyspace option it checking node state with 
+info and proxyhistograms, but with --keyspace option it checking
+only nodetool tablestats
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --nodetool NODETOOL   Full path to nodetool binary (default: nodetool)
+  --host HOST           Host to connect (default: None - not use argument with
+                        nodetool)
+  --port PORT           Port to connect (default: None - not use argument with
+                        nodetool)
+  --user USER           Cassandra user to connect (default: None - not use
+                        argument with nodetool)
+  --password PASSWORD   Cassandra password to connect (default: None - not use
+                        argument with nodetool)
+  --hcc HCC             0..1 - critical % using HEAP (default: 1)
+  --without_gossip      If used (True) - disabled gossip is not critical
+                        (default: False)
+  --without_thrift      If used (True) - disabled thrift is not critical
+                        (default: False)
+  --without_native      If used (True) - disabled native protocol is not
+                        critical (default: False)
+  --fast_check          If used (False) - do not check all - exit and return
+                        the status as soon as the [W/C/U] value is received
+                        (default: True)
+  --coordinator_percentile COORDINATOR_PERCENTILE
+                        coordinator percentile, for checking inter node
+                        communication latency, see nodetool proxyhistograms
+                        (default: 99%)
+  --coordinator_RLW COORDINATOR_RLW
+                        Inter-node communication read latency (from
+                        coordinator, micros) WARNING value, None - Does not
+                        cause a change in state (default: None)
+  --coordinator_RLC COORDINATOR_RLC
+                        Inter-node communication read latency (from
+                        coordinator, micros) CRITICAL value, None - Does not
+                        cause a change in state (default: None)
+  --coordinator_WLW COORDINATOR_WLW
+                        Inter-node communication write latency (from
+                        coordinator, micros) WARNING value, None - Does not
+                        cause a change in state (default: None)
+  --coordinator_WLC COORDINATOR_WLC
+                        Inter-node communication write latency (from
+                        coordinator, micros) CRITICAL value, None - Does not
+                        cause a change in state (default: None)
+  --keyspace KEYSPACE   Keyspace for which to check read/write latency, see
+                        nodetool tablestats. ALL - check all keyspaces
+                        (default: None)
+  --ks_read_latency_w KS_READ_LATENCY_W
+                        Keyspace read latency WARNING value None - Does not
+                        cause a change in state (default: None)
+  --ks_read_latency_c KS_READ_LATENCY_C
+                        Keyspace read latency CRITICAL value None - Does not
+                        cause a change in state (default: None)
+  --ks_write_latency_w KS_WRITE_LATENCY_W
+                        Keyspace write latency WARNING value None - Does not
+                        cause a change in state (default: None)
+  --ks_write_latency_c KS_WRITE_LATENCY_C
+                        Keyspace write latency CRITICAL value None - Does not
+                        cause a change in state (default: None)
+
+version: 1.0.2017033011
 ```
