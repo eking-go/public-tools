@@ -30,7 +30,7 @@ import sys
 __author__ = 'Nikolay Gatilov'
 __copyright__ = 'Nikolay Gatilov'
 __license__ = 'GPL'
-__version__ = '1.0.2017033011'
+__version__ = '1.0.2017033012'
 __maintainer__ = 'Nikolay Gatilov'
 __email__ = 'eking.work@gmail.com'
 OK = 0
@@ -251,7 +251,7 @@ class CasCheck:
                    Write Count: 0
                    Write Latency: NaN ms.
         '''
-        keyspace_r = re.compile('Keyspace :\s*(\w*)')
+        keyspace_r = re.compile('Keyspace\s*:\s*(\w*)')
         read_c_r = re.compile('\s*Read Count:\s*(\d*)')
         read_l_r = re.compile('\s*Read Latency:\s*([Na\d.]*)\s*ms\.')
         write_c_r = re.compile('\s*Write Count:\s*(\d*)')
