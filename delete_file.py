@@ -18,7 +18,7 @@ __maintainer__ = 'Nikolay Gatilov'
 __email__ = 'eking.work@gmail.com'
 
 SLEEP = 1
-BLOCKSIZE = 1024*(1024**2) # 500Mb
+BLOCKSIZE = 1024*(1024**2) # 1b
 DEBUG = False
 
 if __name__ == "__main__":  # main
