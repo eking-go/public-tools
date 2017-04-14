@@ -17,17 +17,26 @@ __license__ = 'GPL'
 __maintainer__ = 'Nikolay Gatilov'
 __email__ = 'eking.work@gmail.com'
 
-SLEEP = 1
-BLOCKSIZE = 1024**3 # 1Gb
+SLEEP = 2
+BLOCKSIZE = 500*(1024**2) # 500Mb
+DEBUG = True
 
 if __name__ == "__main__":  # main
     os.nice(19)
+    if DEBUG:
+        print time.strftime("BEGIN: %Y-%m-%d %H:%M:%S")
     try:
         size = os.stat(sys.argv[1]).st_size
     except:
         print "Unable get the size of file! Use:\n %s filename" % sys.argv[0]
         sys.exit(1)
     while size > BLOCKSIZE:
+        if DEBUG:
+            ts = time.strftime("%Y-%m-%d %H:%M:%S")
+            print "WHILE: size=%d, delay=%d, blocksize=%d, datetime=%s" % (size,
+                                                                           SLEEP,
+                                                                           BLOCKSIZE,
+                                                                           ts)
         f = open(sys.argv[1], 'wb')
         os.ftruncate(f.fileno(), size - BLOCKSIZE)
         os.fsync(f)
@@ -35,3 +44,5 @@ if __name__ == "__main__":  # main
         f.close()
         time.sleep(SLEEP)
     os.unlink(sys.argv[1])
+    if DEBUG:
+        print time.strftime("EXIT: %Y-%m-%d %H:%M:%S\n")
