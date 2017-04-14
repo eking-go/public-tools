@@ -17,9 +17,9 @@ __license__ = 'GPL'
 __maintainer__ = 'Nikolay Gatilov'
 __email__ = 'eking.work@gmail.com'
 
-SLEEP = 2
-BLOCKSIZE = 500*(1024**2) # 500Mb
-DEBUG = True
+SLEEP = 1
+BLOCKSIZE = 1024*(1024**2) # 500Mb
+DEBUG = False
 
 if __name__ == "__main__":  # main
     os.nice(19)
@@ -37,7 +37,7 @@ if __name__ == "__main__":  # main
                                                                            SLEEP,
                                                                            BLOCKSIZE,
                                                                            ts)
-        f = open(sys.argv[1], 'wb')
+        f = open(sys.argv[1], 'ab')
         os.ftruncate(f.fileno(), size - BLOCKSIZE)
         os.fsync(f)
         size = os.fstat(f.fileno()).st_size
