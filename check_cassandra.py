@@ -30,7 +30,7 @@ import sys
 __author__ = 'Nikolay Gatilov'
 __copyright__ = 'Nikolay Gatilov'
 __license__ = 'GPL'
-__version__ = '1.0.2017033012'
+__version__ = '1.0.2017051514'
 __maintainer__ = 'Nikolay Gatilov'
 __email__ = 'eking.work@gmail.com'
 OK = 0
@@ -148,7 +148,7 @@ class CasCheck:
                     self.update_state(CRITICAL,
                                       'Native Transport active',
                                       s.group(1))
-            s = re.search('Load\s*:\s*([\d,]*)\s*(\w*)', line)
+            s = re.search('Load\s*:\s*([\d,.]*)\s*(\w*)', line)
             if s:
                 val = float(s.group(1).replace(',', '.'))
                 self.update_state(OK,
@@ -156,7 +156,7 @@ class CasCheck:
                                   value=val,
                                   units=s.group(2),
                                   perfd=True)
-            s = re.search('Heap Memory\s*\((\w*)\)\s*:\s*([\d,]*)\s*/\s*([\d,]*)',
+            s = re.search('Heap Memory\s*\((\w*)\)\s*:\s*([\d,.]*)\s*/\s*([\d,.]*)',
                           line)
             if s:
                 heap_unit = s.group(1)
@@ -179,7 +179,7 @@ class CasCheck:
                                       heap_used,
                                       heap_unit,
                                       perfd=True)
-            s = re.search('Off Heap Memory\s*\((\w*)\)\s*:\s*([\d,]*)',
+            s = re.search('Off Heap Memory\s*\((\w*)\)\s*:\s*([\d,.]*)',
                           line)
             if s:
                 oheap_unit = s.group(1)
