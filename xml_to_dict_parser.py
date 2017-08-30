@@ -30,15 +30,6 @@ class XMLToDictParser:
         pxml.Parse(data)
 
     def start(self, name, attr):
-        '''try:
-            self.current_dict['subs'][name] = {}
-        except:
-            self.current_dict['subs'] = {}
-            self.current_dict['subs'][name] = {}
-        if len(attr) != 0:
-            self.current_dict['subs'][name]['attr'] = attr
-        self.up_list.append(self.current_dict)
-        self.current_dict = self.current_dict['subs'][name]'''
         try:
             self.current_dict['subs'].append({name: {}})
         except:
