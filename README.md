@@ -268,54 +268,128 @@ Example XML:
        </note>
     </messages>
     
-
 Result with simplify:
 {
-    "subs": {
-        "messages": {
-            "note": {
-                "attr": {
-                    "id": "502"
+    "subs": [
+        {
+            "messages": [
+                {
+                    "note": {
+                        "attr": {
+                            "id": "501"
+                        },
+                        "subs": [
+                            {
+                                "to": "Tove"
+                            },
+                            {
+                                "from": "Jani"
+                            },
+                            {
+                                "heading": "Reminder"
+                            },
+                            {
+                                "body": "Don't forget me this weekend!"
+                            }
+                        ]
+                    }
                 },
-                "subs": {
-                    "body": "I will not",
-                    "from": "Tove",
-                    "heading": "Re: Reminder",
-                    "to": "Jani"
-                }
-            }
-        }
-    }
-}
-
-
-Result and without simplify:
-{
-    "subs": {
-        "messages": {
-            "subs": {
-                "note": {
-                    "attr": {
-                        "id": "502"
-                    },
-                    "subs": {
-                        "body": {
-                            "data": "I will not"
+                {
+                    "note": {
+                        "attr": {
+                            "id": "502"
                         },
-                        "from": {
-                            "data": "Tove"
-                        },
-                        "heading": {
-                            "data": "Re: Reminder"
-                        },
-                        "to": {
-                            "data": "Jani"
-                        }
+                        "subs": [
+                            {
+                                "to": "Jani"
+                            },
+                            {
+                                "from": "Tove"
+                            },
+                            {
+                                "heading": "Re: Reminder"
+                            },
+                            {
+                                "body": "I will not"
+                            }
+                        ]
                     }
                 }
+            ]
+        }
+    ]
+}
+
+
+Result without simplify:
+{
+    "subs": [
+        {
+            "messages": {
+                "subs": [
+                    {
+                        "note": {
+                            "attr": {
+                                "id": "501"
+                            },
+                            "subs": [
+                                {
+                                    "to": {
+                                        "data": "Tove"
+                                    }
+                                },
+                                {
+                                    "from": {
+                                        "data": "Jani"
+                                    }
+                                },
+                                {
+                                    "heading": {
+                                        "data": "Reminder"
+                                    }
+                                },
+                                {
+                                    "body": {
+                                        "data": "Don't forget me this weekend!"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "note": {
+                            "attr": {
+                                "id": "502"
+                            },
+                            "subs": [
+                                {
+                                    "to": {
+                                        "data": "Jani"
+                                    }
+                                },
+                                {
+                                    "from": {
+                                        "data": "Tove"
+                                    }
+                                },
+                                {
+                                    "heading": {
+                                        "data": "Re: Reminder"
+                                    }
+                                },
+                                {
+                                    "body": {
+                                        "data": "I will not"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
             }
         }
-    }
+    ]
 }
+
 
 ```

@@ -30,7 +30,7 @@ class XMLToDictParser:
         pxml.Parse(data)
 
     def start(self, name, attr):
-        try:
+        '''try:
             self.current_dict['subs'][name] = {}
         except:
             self.current_dict['subs'] = {}
@@ -38,7 +38,16 @@ class XMLToDictParser:
         if len(attr) != 0:
             self.current_dict['subs'][name]['attr'] = attr
         self.up_list.append(self.current_dict)
-        self.current_dict = self.current_dict['subs'][name]
+        self.current_dict = self.current_dict['subs'][name]'''
+        try:
+            self.current_dict['subs'].append({name: {}})
+        except:
+            self.current_dict['subs'] = []
+            self.current_dict['subs'].append({name: {}})
+        if len(attr) != 0:
+            self.current_dict['subs'][-1][name]['attr'] = attr
+        self.up_list.append(self.current_dict)
+        self.current_dict = self.current_dict['subs'][-1][name]
 
     def stop(self, name):
         try:
@@ -58,9 +67,9 @@ class XMLToDictParser:
             data_present = False
         self.current_dict = self.up_list.pop()
         if not subs_present and not attr_present and data_present and self.simplify:
-            self.current_dict['subs'][name] = d
+            self.current_dict['subs'][-1][name] = d
         if subs_present and not attr_present and not data_present and self.simplify:
-            self.current_dict['subs'][name] = s
+            self.current_dict['subs'][-1][name] = s
 
     def get_data(self, data):
         dat = data.lstrip()
@@ -96,6 +105,6 @@ if __name__ == "__main__":  # main
                                                        sort_keys=True,
                                                        indent=4))
     pd = XMLToDictParser(xml_test, simplify=False)
-    print('\nResult and without simplify:\n%s\n' % json.dumps(pd.result(),
+    print('\nResult without simplify:\n%s\n' % json.dumps(pd.result(),
                                                               sort_keys=True,
                                                               indent=4))
