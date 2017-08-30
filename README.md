@@ -241,3 +241,81 @@ optional arguments:
 
 version: 1.0.2017033011
 ```
+
+## xml_to_dict_parser.py - convert XML to dict
+
+
+use only xml.parsers.expat - minimal dependenses, only for standard library.
+For using with small utilites.
+
+Example:
+```
+$ ./xml_to_dict_parser.py 
+Example XML:
+
+    <messages>
+       <note id="501">
+         <to>Tove</to>
+         <from>Jani</from>
+         <heading>Reminder</heading>
+         <body>Don't forget me this weekend!</body>
+       </note>
+       <note id="502">
+         <to>Jani</to>
+         <from>Tove</from>
+         <heading>Re: Reminder</heading>
+         <body>I will not</body>
+       </note>
+    </messages>
+    
+
+Result with simplify:
+{
+    "subs": {
+        "messages": {
+            "note": {
+                "attr": {
+                    "id": "502"
+                },
+                "subs": {
+                    "body": "I will not",
+                    "from": "Tove",
+                    "heading": "Re: Reminder",
+                    "to": "Jani"
+                }
+            }
+        }
+    }
+}
+
+
+Result and without simplify:
+{
+    "subs": {
+        "messages": {
+            "subs": {
+                "note": {
+                    "attr": {
+                        "id": "502"
+                    },
+                    "subs": {
+                        "body": {
+                            "data": "I will not"
+                        },
+                        "from": {
+                            "data": "Tove"
+                        },
+                        "heading": {
+                            "data": "Re: Reminder"
+                        },
+                        "to": {
+                            "data": "Jani"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+```
