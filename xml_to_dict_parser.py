@@ -106,5 +106,5 @@ if __name__ == "__main__":  # main
                                                        indent=4))
     pd = XMLToDictParser(xml_test, simplify=False)
     print('\nResult without simplify:\n%s\n' % json.dumps(pd.result(),
-                                                              sort_keys=True,
-                                                              indent=4))
+                                                          sort_keys=True,
+                                                          indent=4))
