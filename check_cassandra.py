@@ -30,7 +30,7 @@ import sys
 __author__ = 'Nikolay Gatilov'
 __copyright__ = 'Nikolay Gatilov'
 __license__ = 'GPL'
-__version__ = '1.0.2017051514'
+__version__ = '1.0.2019050714'
 __maintainer__ = 'Nikolay Gatilov'
 __email__ = 'eking.work@gmail.com'
 OK = 0
@@ -236,7 +236,29 @@ class CasCheck:
                                       'Inter-node read latency %s' % cpname,
                                       rl,
                                       units='micros',
-                                      perfd=True) 
+                                      perfd=True)
+
+    def check_gossipinfo(self, list_warning_states=['BOOT']):
+        node_r = re.compile('/(.*)')
+        state_r = re.compile('\s*STATUS:\d*:(\w+),.*')
+        node = ''
+        state = ''
+        res = []
+        for line in self.check_nodetool('gossipinfo'):
+            n_s = node_r.search(line)
+            if n_s:
+                node = n_s.group(1)
+                continue
+            s_s = state_r.search(line)
+            if s_s:
+                state = s_s.group(1)
+                res.append((node, state))
+                if state != 'NORMAL':
+                    msg = 'Node %s in state %s' % (node, state)
+                    if state in list_warning_states:
+                        self.update_state(WARNING, msg)
+                    else:
+                        self.update_state(CRITICAL, msg)
 
     def check_tablestats(self,
                          keyspace=None,
@@ -251,7 +273,7 @@ class CasCheck:
                    Write Count: 0
                    Write Latency: NaN ms.
         '''
-        keyspace_r = re.compile('Keyspace\s*:\s*(\w*)')
+        keyspace_r = re.compile('Keyspace :\s*(\w*)')
         read_c_r = re.compile('\s*Read Count:\s*(\d*)')
         read_l_r = re.compile('\s*Read Latency:\s*([Na\d.]*)\s*ms\.')
         write_c_r = re.compile('\s*Write Count:\s*(\d*)')
@@ -471,6 +493,7 @@ if __name__ == '__main__':  # main
                   user=options.user,
                   password=options.password,
                   full_check=options.full_check)
+    cs.check_gossipinfo()
     if options.keyspace is None:
         cs.check_info(without_gossip=options.without_gossip,
                       without_thrift=options.without_thrift,
