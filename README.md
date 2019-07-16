@@ -393,3 +393,39 @@ Result without simplify:
 
 
 ```
+
+## check_cpu_steal.py Nagios plugin with perfomance data to check cpu load and steal on VPS via libvirt
+
+```
+$ ./check_cpu_steal.py -h
+usage: check_cpu_steal.py [-h] [--kvmtop KVMTOP]
+                          [--max_steal_warn MAX_STEAL_WARN]
+                          [--max_steal_crit MAX_STEAL_CRIT]
+                          [--max_cpu_warn MAX_CPU_WARN]
+                          [--max_cpu_crit MAX_CPU_CRIT]
+
+NRPE plugin with perfomance data to check maximum
+cpu load and steal on VPS via libvirt
+
+It get info from:
+
+* `kvmtop -r 1 --cpu --printer=json`
+
+https://cha87de.github.io/kvmtop/
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --kvmtop KVMTOP       Full path to kvmtop binary (default: /usr/bin/kvmtop)
+  --max_steal_warn MAX_STEAL_WARN
+                        Maximum steal (on all VPS) WARNING value (default:
+                        100)
+  --max_steal_crit MAX_STEAL_CRIT
+                        Maximum steal (on all VPS) CRITICAL value (default:
+                        101)
+  --max_cpu_warn MAX_CPU_WARN
+                        Maximum cpu (on all VPS) WARNING value (default: 100)
+  --max_cpu_crit MAX_CPU_CRIT
+                        Maximum cpu (on all VPS) CRITICAL value (default: 101)
+
+version: 1.0.2019072014
+```
