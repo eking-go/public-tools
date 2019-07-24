@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 '''
-NRPE plugin with perfomance data to check maximum
-cpu load and steal on VPS via libvirt
+NRPE plugin with perfomance data to check maximum cpu load
+and steal on VPS via libvirt
 
 It get info from:
 
@@ -19,7 +19,7 @@ import sys
 __author__ = 'Nikolay Gatilov'
 __copyright__ = 'Nikolay Gatilov'
 __license__ = 'GPL'
-__version__ = '1.0.2019072014'
+__version__ = '1.1.2019072410'
 __maintainer__ = 'Nikolay Gatilov'
 __email__ = 'eking.work@gmail.com'
 OK = 0
@@ -31,13 +31,18 @@ UNKNOWN = 3
 class CpuCheck(object):
 
     def __init__(self,
-                 kvmtopbin='/usr/bin/kvmtop'):
+                 kvmtopbin='/usr/bin/kvmtop',
+                 excluded=[]):
         self.kvmtop = ['sudo']
         self.kvmtop.append(kvmtopbin)
         self.kvmtop.extend(['--runs=1', '--cpu', '--printer=json'])
         self.perfdata = {}
         self.state = OK
         self.comment = []
+        if isinstance(excluded, list):
+            self.excluded = excluded
+        else:
+            self.excluded = []
 
     def msg(self):
         m = ' '.join(self.comment)
@@ -93,6 +98,8 @@ class CpuCheck(object):
             ret['mc_name'] = ''
             ret['ms_name'] = ''
             for v in dl:
+                if v['name'] in self.excluded:
+                    continue
                 if v['cpu_total'] >= ret['max_cpu']:
                     ret['max_cpu'] = v['cpu_total']
                     ret['mc_name'] = v['name']
@@ -185,8 +192,12 @@ if __name__ == '__main__':  # main
                      default=101,
                      type=int,
                      help='Maximum cpu (on all VPS) CRITICAL value (default: %(default)s)')
+    opt.add_argument('--exclude_vps',
+                     dest='exclude_vps',
+                     action='append',
+                     help='Exclude VPS by name from analyse, so cpu will not checked on it, may be used many times')
     options = opt.parse_args()
-    cc = CpuCheck(kvmtopbin=options.kvmtop)
+    cc = CpuCheck(kvmtopbin=options.kvmtop, excluded=options.exclude_vps)
     cc.check_cpu(max_steal_warn=options.max_steal_warn,
                  max_steal_crit=options.max_steal_crit,
                  max_cpu_warn=options.max_cpu_warn,

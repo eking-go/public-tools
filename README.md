@@ -403,9 +403,10 @@ usage: check_cpu_steal.py [-h] [--kvmtop KVMTOP]
                           [--max_steal_crit MAX_STEAL_CRIT]
                           [--max_cpu_warn MAX_CPU_WARN]
                           [--max_cpu_crit MAX_CPU_CRIT]
+                          [--exclude_vps EXCLUDE_VPS]
 
-NRPE plugin with perfomance data to check maximum
-cpu load and steal on VPS via libvirt
+NRPE plugin with perfomance data to check maximum cpu load
+and steal on VPS via libvirt
 
 It get info from:
 
@@ -426,6 +427,9 @@ optional arguments:
                         Maximum cpu (on all VPS) WARNING value (default: 100)
   --max_cpu_crit MAX_CPU_CRIT
                         Maximum cpu (on all VPS) CRITICAL value (default: 101)
+  --exclude_vps EXCLUDE_VPS
+                        Exclude VPS by name from analyse, so cpu will not
+                        checked on it, may be used many times
 
-version: 1.0.2019072014
+version: 1.1.2019072410
 ```
